@@ -1,0 +1,128 @@
+import math
+
+class g:
+	
+	
+	
+	def __init__(self,x,y, xy, direction = 1):
+		self.x = x
+		self.y = y
+		self.xy = xy
+		self.direction = direction
+	
+	
+	
+	def move(self,length, direction = None):
+		length *= self.direction
+		
+		if self.xy == 'x':
+			
+			App.ActiveDocument.Sketch.addGeometry(Part.LineSegment(
+				App.Vector(     0.001*self.x,          0.001*(self.y),            0),
+				App.Vector(     0.001*(self.x+length), 0.001*(self.y),            0)),
+				False)
+			
+			self.x += length
+			self.xy = 'y'
+
+			if direction:
+				self.direction = 1 if direction*length > 0 else -1
+			
+		else:
+			
+			App.ActiveDocument.Sketch.addGeometry(Part.LineSegment(
+				App.Vector(     0.001*self.x,          0.001*(self.y),            0),
+				App.Vector(     0.001*(self.x),        0.001*(self.y+length),     0)),
+				False)
+			
+			self.y += length
+			self.xy = 'x'
+
+			if direction:
+				self.direction = 1 if -direction*length > 0 else -1
+	
+	
+	
+	def teeth(self,teeth,deep,wide):
+		for i in range (  teeth - 1):
+			self.move(deep)
+			self.move(wide)
+			self.move(-deep)
+			self.move(wide)
+		
+		self.move(deep)
+		self.move(wide)
+		self.move(-deep)
+
+
+
+part = 'debug'
+thick = 3650
+
+
+
+if (part == 'top'):
+	greek = g(0,0,'y')
+	
+	greek.move(51000)
+	greek.teeth(17,-thick,6000)
+	greek.move(51000)
+	
+	greek.move(-400000)
+	
+	greek.move(-51000)
+	greek.teeth(17,thick,-6000)
+	greek.move(-51000)
+	
+	greek.move(53000)
+	greek.teeth(25,thick,6000)
+	greek.move(53000)
+
+
+
+if (part == 'front'):
+	greek = g(0,0,'y')
+	
+	greek.move(25500)
+	greek.teeth(11,-3000,3000)
+	greek.move(31500-2*thick)
+	
+	greek.move(-53000)
+	greek.teeth(25,2*thick,-6000)
+	greek.move(-53000)
+	
+	greek.move(-31500+2*thick)
+	greek.teeth(11,3000,-3000)
+	greek.move(-25500)
+	
+	greek.move(400000)
+
+
+
+if (part == 'side'):
+	greek = g(0,thick,'y')
+	
+	greek.move(300000-thick)
+	greek.move(-120000+2*thick)
+	
+	greek.move(-51000)
+	greek.teeth(17,-2*thick,-6000)
+	greek.move(-51000+thick)
+	
+	greek.move(31500-2*thick)
+	greek.teeth(11,-thick,3000)
+	greek.move(25500)
+
+
+
+if part == 'debug':
+	greek = g(0,0,'x')
+	greek.move(10000,1)
+	greek.move(10000,1)
+	greek.move(10000,1)
+	greek.move(10000,1)
+
+
+
+App.ActiveDocument.Sketch.addConstraint(Sketcher.Constraint('Vertical',0)) 
+App.ActiveDocument.Sketch.delConstraint(0)
