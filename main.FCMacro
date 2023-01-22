@@ -1,19 +1,16 @@
-import math
-
-class g:
+class greekParent:
 	
-	
-	
-	def __init__(self,x,y, xy, direction = 1):
+	def __init__(self,x,y, xy):
 		self.x = x
 		self.y = y
 		self.xy = xy
-		self.direction = direction
+		self.history = []
 	
 	
-	
-	def move(self,length, direction = None):
-		length *= self.direction
+	def move(self, length, pattern = None):
+		
+		if pattern is not None:
+			length = pattern(self,length)
 		
 		if self.xy == 'x':
 			
@@ -24,9 +21,6 @@ class g:
 			
 			self.x += length
 			self.xy = 'y'
-
-			if direction:
-				self.direction = 1 if direction*length > 0 else -1
 			
 		else:
 			
@@ -37,90 +31,68 @@ class g:
 			
 			self.y += length
 			self.xy = 'x'
-
-			if direction:
-				self.direction = 1 if -direction*length > 0 else -1
-	
-	
-	
-	def teeth(self,teeth,deep,wide):
-		for i in range (  teeth - 1):
-			self.move(deep)
-			self.move(wide)
-			self.move(-deep)
-			self.move(wide)
 		
-		self.move(deep)
-		self.move(wide)
-		self.move(-deep)
+		self.history.append(length)
+	
+	
+def zPattern(self,length):
+	return length if self.history[-2] > 0 else -length
+
+def cPattern(self,length):
+	return -length if self.history[-2] > 0 else length
+
+def rightPattern(self,length):
+	
+	if self.xy == 'x':
+		return length if self.history[-1] > 0 else -length
+	
+	if self.xy == 'y':
+		return -length if self.history[-1] > 0 else length
+
+def leftPattern(self,length):
+	
+	if self.xy == 'x':
+		return -length if self.history[-1] > 0 else length
+	
+	if self.xy == 'y':
+		return length if self.history[-1] > 0 else -length
+
+
+
+class greek(greekParent):
+	
+	def teeth(self, length, teethNumber, width, space, depth, direction, pattern = None):
+		
+		parent = greekParent(self.x, self.y, self.xy)
+		firstMove = (length - teethNumber*width - (teethNumber-1)*space)//2
+		lastMove = length - teethNumber*width - (teethNumber-1)*space - firstMove
+		
+		parent.move(firstMove,pattern)
+		parent.move(depth, direction)
+		parent.move(width, zPattern)
+		parent.move(depth, cPattern)
+		
+		for i in range(teethNumber-1):
+			parent.move(space, zPattern)
+			parent.move(depth, cPattern)
+			parent.move(space, zPattern)
+			parent.move(depth, cPattern)
+
+		parent.move(lastMove, zPattern)
+		
+		self.history.append(  parent.history[-1]   )
+		self.x = parent.x
+		self.y = parent.y
+		self.xy = parent.xy
 
 
 
 part = 'debug'
 thick = 3650
 
-
-
-if (part == 'top'):
-	greek = g(0,0,'y')
-	
-	greek.move(51000)
-	greek.teeth(17,-thick,6000)
-	greek.move(51000)
-	
-	greek.move(-400000)
-	
-	greek.move(-51000)
-	greek.teeth(17,thick,-6000)
-	greek.move(-51000)
-	
-	greek.move(53000)
-	greek.teeth(25,thick,6000)
-	greek.move(53000)
-
-
-
-if (part == 'front'):
-	greek = g(0,0,'y')
-	
-	greek.move(25500)
-	greek.teeth(11,-3000,3000)
-	greek.move(31500-2*thick)
-	
-	greek.move(-53000)
-	greek.teeth(25,2*thick,-6000)
-	greek.move(-53000)
-	
-	greek.move(-31500+2*thick)
-	greek.teeth(11,3000,-3000)
-	greek.move(-25500)
-	
-	greek.move(400000)
-
-
-
-if (part == 'side'):
-	greek = g(0,thick,'y')
-	
-	greek.move(300000-thick)
-	greek.move(-120000+2*thick)
-	
-	greek.move(-51000)
-	greek.teeth(17,-2*thick,-6000)
-	greek.move(-51000+thick)
-	
-	greek.move(31500-2*thick)
-	greek.teeth(11,-thick,3000)
-	greek.move(25500)
-
-
-
 if part == 'debug':
-	greek = g(0,0,'x')
-	greek.move(10000,1)
-	greek.move(10000,1)
-	greek.move(10000,1)
-	greek.move(10000,1)
+	k = greek(0,0,'x')
+	k.teeth( 100000, 2, 10000, 10000, 10000, leftPattern)
 
 
 
