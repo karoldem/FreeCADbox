@@ -14,7 +14,7 @@ class greekParent:
 		
 		if self.xy == 'x':
 			
-			App.ActiveDocument.Sketch.addGeometry(Part.LineSegment(
+			Gui.ActiveDocument.getInEdit().Object.addGeometry(Part.LineSegment(
 				App.Vector(     0.001*self.x,          0.001*(self.y),            0),
 				App.Vector(     0.001*(self.x+length), 0.001*(self.y),            0)),
 				False)
@@ -24,7 +24,7 @@ class greekParent:
 			
 		else:
 			
-			App.ActiveDocument.Sketch.addGeometry(Part.LineSegment(
+			Gui.ActiveDocument.getInEdit().Object.addGeometry(Part.LineSegment(
 				App.Vector(     0.001*self.x,          0.001*(self.y),            0),
 				App.Vector(     0.001*(self.x),        0.001*(self.y+length),     0)),
 				False)
@@ -61,6 +61,31 @@ def leftPattern(self,length):
 
 class greek(greekParent):
 	
+	def tooth(self, width, space, depth, direction):
+		
+		self.move(depth, direction)
+		self.move(width, zPattern)
+		self.move(depth, cPattern)
+		self.move(space, zPattern)
+		
+		for _ in range(4):
+			self.history.pop()
+	
+	def steps(self, steps, direction):
+		
+		currentLevel= 0
+		
+		for i in steps:
+			self.move(i[0] - currentLevel, direction)
+			currentLevel = i[0]
+			self.move(i[1], zPattern)
+			self.history.pop()
+			self.history.pop()
+		
+		self.move(-currentLevel, direction)
+		self.history.pop()
+
+	
 	def teeth(self, length, teethNumber, width, space, depth, direction, pattern = None):
 		
 		parent = greekParent(self.x, self.y, self.xy)
@@ -76,7 +101,7 @@ class greek(greekParent):
 		for i in range(teethNumber-1):
 			parent.move(space, zPattern)
 			parent.move(depth, cPattern)
-			parent.move(space, zPattern)
+			parent.move(width, zPattern)
 			parent.move(depth, cPattern)
 
 		parent.move(lastMove, zPattern)
@@ -88,20 +113,16 @@ class greek(greekParent):
 
 
 
-part = 'debug'
-thick = 3650
+heights = [50, 300, 250, 250, 200, 150]
+heights = [i*1000 for i in heights]
+middle = 250*1000
+width = 500*1000
+depth = 20*1000
 
-if part == 'debug':
-	k = greek(0,0,'x')
-	k.teeth( 100000, 2, 10000, 10000, 10000, leftPattern)
-	k.teeth( 100000, 2, 10000, 10000, 10000, leftPattern, rightPattern)
-	k.teeth( 100000, 2, 10000, 10000, 10000, rightPattern, cPattern)
-
-
-
+k = greek(0,0,'x')
+k.move(20000)
+k.steps([ (10000,10000), (20000, 10000), (-10000, 5000)  ], leftPattern)
 
 
-App.ActiveDocument.Sketch.addConstraint(Sketcher.Constraint('Vertical',0)) 
-App.ActiveDocument.Sketch.delConstraint(0)
-
-
+Gui.ActiveDocument.getInEdit().Object.addConstraint(Sketcher.Constraint('Vertical',0)) 
+Gui.ActiveDocument.getInEdit().Object.delConstraint(0)
