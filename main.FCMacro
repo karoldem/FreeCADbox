@@ -84,16 +84,19 @@ class greek(greekParent):
 		
 		self.move(-currentLevel, direction)
 		self.history.pop()
-
 	
-	def teeth(self, length, teethNumber, width, space, depth, direction, pattern = None):
+	
+	def teeth(self, teethNumber, width, space, depth, direction, moveAfter, moveBefore = None):
+		
+		if moveBefore is not None:
+			if 'pattern' in moveBefore:
+				self.move( moveBefore['length'], moveBefore['pattern'] )
+			else:
+				self.move( moveBefore['length'] )
 		
 		parent = greekParent(self.x, self.y, self.xy)
-		firstMove = (length - teethNumber*width - (teethNumber-1)*space)//2
-		lastMove = length - teethNumber*width - (teethNumber-1)*space - firstMove
 		parent.history = list(self.history)
 		
-		parent.move(firstMove,pattern)
 		parent.move(depth, direction)
 		parent.move(width, zPattern)
 		parent.move(depth, cPattern)
@@ -103,25 +106,45 @@ class greek(greekParent):
 			parent.move(depth, cPattern)
 			parent.move(width, zPattern)
 			parent.move(depth, cPattern)
-
-		parent.move(lastMove, zPattern)
 		
-		self.history.append(  parent.history[-1]   )
+		parent.move(moveAfter, zPattern)
+				
 		self.x = parent.x
 		self.y = parent.y
 		self.xy = parent.xy
+		
+		return { 'teethNumber':teethNumber, 'width':width, 'space':space, 'depth':depth, 'moveAfter':moveAfter, 'moveBefore':moveBefore }
+	
+	def loadTeeth( self, args, direction ):
+		self.teeth( args['teethNumber'], args['width'], args['space'], args['depth'], direction, args['moveAfter'], args['moveBefore'] )
+	
+	def fitTeeth(self, length, width, space):
+		return ((length+space)//(width+space))
 
 
-
+thickness = 3500
 heights = [50, 300, 250, 250, 200, 150]
 heights = [i*1000 for i in heights]
 middle = 250*1000
 width = 500*1000
 depth = 20*1000
 
+
+
 k = greek(0,0,'x')
-k.move(20000)
-k.steps([ (10000,10000), (20000, 10000), (-10000, 5000)  ], leftPattern)
+
+myTeeth = k.teeth( 3, 10000, 10000, 10000,  leftPattern, 20000, {'length':20000} )
+
+myTeeth['moveBefore']['pattern'] = leftPattern
+k.loadTeeth( myTeeth, leftPattern )
+
+myTeeth['moveBefore']['pattern'] = cPattern
+k.loadTeeth( myTeeth, leftPattern )
+k.loadTeeth( myTeeth, leftPattern )
+
+
+
+
 
 
 Gui.ActiveDocument.getInEdit().Object.addConstraint(Sketcher.Constraint('Vertical',0)) 
