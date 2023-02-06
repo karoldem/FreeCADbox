@@ -148,8 +148,5 @@ k.loadTeeth( xzz, leftPattern )
 
 
 
-
-
-
 Gui.ActiveDocument.getInEdit().Object.addConstraint(Sketcher.Constraint('Vertical',0)) 
 Gui.ActiveDocument.getInEdit().Object.delConstraint(0)
