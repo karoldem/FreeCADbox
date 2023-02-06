@@ -133,14 +133,18 @@ depth = 20*1000
 
 k = greek(0,0,'x')
 
-myTeeth = k.teeth( 3, 10000, 10000, 10000,  leftPattern, 20000, {'length':20000} )
+xzx = k.teeth( 3, 10000, 10000, 10000,  leftPattern, 20000, {'length':20000} )
 
-myTeeth['moveBefore']['pattern'] = leftPattern
-k.loadTeeth( myTeeth, leftPattern )
+xzz = dict(xzx)
+xzz['teethNumber'] = 5
+xzz['moveBefore']['pattern'] = leftPattern
+k.loadTeeth( xzz, leftPattern )
 
-myTeeth['moveBefore']['pattern'] = cPattern
-k.loadTeeth( myTeeth, leftPattern )
-k.loadTeeth( myTeeth, leftPattern )
+xzx['moveBefore']['pattern'] = cPattern
+xzz['moveBefore']['pattern'] = cPattern
+
+k.loadTeeth( xzx, leftPattern )
+k.loadTeeth( xzz, leftPattern )
 
 
 
