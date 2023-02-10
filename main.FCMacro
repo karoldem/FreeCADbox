@@ -61,30 +61,26 @@ def leftPattern(self,length):
 
 class greek(greekParent):
 	
-	def tooth(self, width, space, depth, direction):
+	def steps(self, steps, direction, moveAfter, moveBefore = None):
 		
-		self.move(depth, direction)
-		self.move(width, zPattern)
-		self.move(depth, cPattern)
-		self.move(space, zPattern)
-		
-		for _ in range(4):
-			self.history.pop()
-	
-	def steps(self, steps, direction):
+		if moveBefore is not None:
+			if 'pattern' in moveBefore:
+				self.move( moveBefore['length'], moveBefore['pattern'] )
+			else:
+				self.move( moveBefore['length'] )
 		
 		currentLevel= 0
+		parent = greekParent(self.x, self.y, self.xy)
+		parent.history = list(self.history)
 		
 		for i in steps:
-			self.move(i[0] - currentLevel, direction)
+			parent.move(i[0] - currentLevel, direction)
 			currentLevel = i[0]
-			self.move(i[1], zPattern)
-			self.history.pop()
-			self.history.pop()
+			parent.move(i[1], zPattern)
 		
-		self.move(-currentLevel, direction)
-		self.history.pop()
-	
+		parent.move(-currentLevel, direction)
+		
+		parent.move(moveAfter, zPattern)
 	
 	def teeth(self, teethNumber, width, space, depth, direction, moveAfter, moveBefore = None):
 		
@@ -119,7 +115,7 @@ class greek(greekParent):
 		self.teeth( args['teethNumber'], args['width'], args['space'], args['depth'], direction, args['moveAfter'], args['moveBefore'] )
 	
 	def fitTeeth(self, length, width, space):
-		return ((length+space)//(width+space))
+		return (  (length+space)//(width+space), ((length+space)//(width+space))*(width+space) - space  )
 
 
 thickness = 3500
@@ -127,24 +123,79 @@ heights = [50, 300, 250, 250, 200, 150]
 heights = [i*1000 for i in heights]
 middle = 250*1000
 width = 500*1000
-depth = 20*1000
+rightSide = (width - middle)//2
+leftSide = width - middle - rightSide
+depth = 200*1000
+frontHeight = 50*1000
 
 
 
 k = greek(0,0,'x')
 
-xzx = k.teeth( 3, 10000, 10000, 10000,  leftPattern, 20000, {'length':20000} )
+fitTeeth = k.fitTeeth(rightSide - 6*thickness, thickness, thickness)
 
-xzz = dict(xzx)
-xzz['teethNumber'] = 5
-xzz['moveBefore']['pattern'] = leftPattern
-k.loadTeeth( xzz, leftPattern )
+p= [rightSide - fitTeeth[1] - (rightSide - fitTeeth[1])//2,
+	fitTeeth[1],
+	(rightSide - fitTeeth[1])//2,
+	fitTeeth[0]]
 
-xzx['moveBefore']['pattern'] = cPattern
-xzz['moveBefore']['pattern'] = cPattern
+fitTeeth = k.fitTeeth(middle - 8*thickness, thickness, thickness)
 
-k.loadTeeth( xzx, leftPattern )
-k.loadTeeth( xzz, leftPattern )
+q= [middle - fitTeeth[1] - (middle - fitTeeth[1])//2 - thickness,
+	fitTeeth[1],
+	(middle - fitTeeth[1])//2 - thickness,
+	fitTeeth[0]]
+
+fitTeeth = k.fitTeeth(leftSide - 6*thickness, thickness, thickness)
+
+r= [leftSide - fitTeeth[1] - (leftSide - fitTeeth[1])//2,
+	fitTeeth[1],
+	(leftSide - fitTeeth[1])//2,
+	fitTeeth[0]]
+
+Teeth = {
+	'teethNumber': p[3],
+	'width':       thickness,
+	'space':       thickness,
+	'depth':       thickness,
+	'moveAfter':   p[2] + thickness + q[0],
+	'moveBefore':  {'length' :p[0] }   }
+
+k.loadTeeth( Teeth, leftPattern )
+
+Teeth = {
+	'teethNumber': q[3],
+	'width':       thickness,
+	'space':       thickness,
+	'depth':       thickness,
+	'moveAfter':   q[2] + thickness + r[0],
+	'moveBefore':  None  }
+
+k.loadTeeth( Teeth, leftPattern )
+
+Teeth = {
+	'teethNumber': r[3],
+	'width':       thickness,
+	'space':       thickness,
+	'depth':       thickness,
+	'moveAfter':   r[2],
+	'moveBefore':  None  }
+
+k.loadTeeth( Teeth, leftPattern )
+
+fitTeeth = k.fitTeeth(frontHeight - 6*thickness, thickness, thickness)
+
+s = {
+	'teethNumber': fitTeeth[0],
+	'width':       thickness,
+	'space':       thickness,
+	'depth':       thickness,
+	'moveAfter':   frontHeight - (frontHeight - fitTeeth[1])//2 - fitTeeth[1],
+	'moveBefore':  { 'length': (frontHeight - fitTeeth[1])//2, 'pattern': leftPattern}  }
+
+k.loadTeeth( s, leftPattern )
+k.move(width, leftPattern)
+k.loadTeeth( s, leftPattern )
 
 
 
