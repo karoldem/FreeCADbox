@@ -57,7 +57,8 @@ def leftPattern(self,length):
 	if self.xy == 'y':
 		return length if self.history[-1] > 0 else -length
 
-
+class teeth:
+	antiAccidentalOverrideVariable = 'AN6C_P5R6_Y1ES'
 
 class greek(greekParent):
 	
